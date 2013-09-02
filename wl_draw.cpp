@@ -1551,7 +1551,7 @@ void    ThreeDRefresh (void)
     memset(spotvis,0,maparea);
     spotvis[player->tilex][player->tiley] = 1;       // Detect all sprites over player fix
 
-    vbuf = VL_LockSurface(screenBuffer);
+    vbuf = VL_LockSurface(curSurface);
     vbuf+=screenofs;
     vbufPitch = bufferPitch;
 
@@ -1599,7 +1599,7 @@ void    ThreeDRefresh (void)
     if(Keyboard[sc_Tab] && viewsize == 21 && gamestate.weapon != -1)
         ShowActStatus();
 
-    VL_UnlockSurface(screenBuffer);
+    VL_UnlockSurface(curSurface);
     vbuf = NULL;
 
 //
@@ -1608,7 +1608,7 @@ void    ThreeDRefresh (void)
 
     if (fizzlein)
     {
-        FizzleFade(screenBuffer, 0, 0, screenWidth, screenHeight, 20, false);
+        FizzleFade(curSurface, 0, 0, screenWidth, screenHeight, 20, false);
         fizzlein = false;
 
         lasttimecount = GetTimeCount();          // don't make a big tic count
@@ -1626,8 +1626,7 @@ void    ThreeDRefresh (void)
             US_Print(" fps");
         }
 #endif
-        SDL_BlitSurface(screenBuffer, NULL, screen, NULL);
-        SDL_Flip(screen);
+        VH_UpdateScreen();
     }
 
 #ifndef REMDEBUG

@@ -11,6 +11,7 @@ void Quit (const char *error,...);
 
 //===========================================================================
 
+extern SDL_Window *screenWindow;
 extern SDL_Surface *screen, *screenBuffer, *curSurface;
 
 extern  boolean  fullscreen, usedoublebuffering;
@@ -68,7 +69,11 @@ void VL_MungePic                (byte *source, unsigned width, unsigned height);
 void VL_DrawPicBare             (int x, int y, byte *pic, int width, int height);
 void VL_MemToLatch              (byte *source, int width, int height,
                                     SDL_Surface *destSurface, int x, int y);
-void VL_ScreenToScreen          (SDL_Surface *source, SDL_Surface *dest);
+void inline VL_ScreenToScreen   (SDL_Surface *source, SDL_Surface *dest)
+{
+    SDL_BlitSurface(source, NULL, dest, NULL);
+}
+void VL_RenderFrame             (void);
 void VL_MemToScreenScaledCoord  (byte *source, int width, int height, int scx, int scy);
 void VL_MemToScreenScaledCoord  (byte *source, int origwidth, int origheight, int srcx, int srcy,
                                     int destx, int desty, int width, int height);

@@ -990,6 +990,7 @@ void InitRedShifts (void)
             workptr->g = baseptr->g + delta * i / REDSTEPS;
             delta = -baseptr->b;
             workptr->b = baseptr->b + delta * i / REDSTEPS;
+            workptr->a = SDL_ALPHA_OPAQUE;
             baseptr++;
             workptr++;
         }
@@ -1008,6 +1009,7 @@ void InitRedShifts (void)
             workptr->g = baseptr->g + delta * i / WHITESTEPS;
             delta = 0-baseptr->b;
             workptr->b = baseptr->b + delta * i / WHITESTEPS;
+            workptr->a = SDL_ALPHA_OPAQUE;
             baseptr++;
             workptr++;
         }
