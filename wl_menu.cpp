@@ -4029,12 +4029,12 @@ CheckForEpisodes (void)
 //
 #ifdef JAPAN
 #ifdef JAPDEMO
-    if(!stat("vswap.wj1", &statbuf))
+    if(!stat(DATADIR "vswap.wj1", &statbuf))
     {
         strcpy (extension, "wj1");
         numEpisodesMissing = 5;
 #else
-    if(!stat("vswap.wj6", &statbuf))
+    if(!stat(DATADIR "vswap.wj6", &statbuf))
     {
         strcpy (extension, "wj6");
 #endif
@@ -4052,7 +4052,7 @@ CheckForEpisodes (void)
 // ENGLISH
 //
 #ifdef UPLOAD
-    if(!stat("vswap.wl1", &statbuf))
+    if(!stat(DATADIR "vswap.wl1", &statbuf))
     {
         strcpy (extension, "wl1");
         numEpisodesMissing = 5;
@@ -4061,7 +4061,7 @@ CheckForEpisodes (void)
         Quit ("NO WOLFENSTEIN 3-D DATA FILES to be found!");
 #else
 #ifndef SPEAR
-    if(!stat("vswap.wl6", &statbuf))
+    if(!stat(DATADIR "vswap.wl6", &statbuf))
     {
         strcpy (extension, "wl6");
         NewEmenu[2].active =
@@ -4074,7 +4074,7 @@ CheckForEpisodes (void)
     }
     else
     {
-        if(!stat("vswap.wl3", &statbuf))
+        if(!stat(DATADIR "vswap.wl3", &statbuf))
         {
             strcpy (extension, "wl3");
             numEpisodesMissing = 3;
@@ -4082,7 +4082,7 @@ CheckForEpisodes (void)
         }
         else
         {
-            if(!stat("vswap.wl1", &statbuf))
+            if(!stat(DATADIR "vswap.wl1", &statbuf))
             {
                 strcpy (extension, "wl1");
                 numEpisodesMissing = 5;
@@ -4099,28 +4099,28 @@ CheckForEpisodes (void)
 #ifndef SPEARDEMO
     if(param_mission == 0)
     {
-        if(!stat("vswap.sod", &statbuf))
+        if(!stat(DATADIR "vswap.sod", &statbuf))
             strcpy (extension, "sod");
         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
     }
     else if(param_mission == 1)
     {
-        if(!stat("vswap.sd1", &statbuf))
+        if(!stat(DATADIR "vswap.sd1", &statbuf))
             strcpy (extension, "sd1");
         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
     }
     else if(param_mission == 2)
     {
-        if(!stat("vswap.sd2", &statbuf))
+        if(!stat(DATADIR "vswap.sd2", &statbuf))
             strcpy (extension, "sd2");
         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
     }
     else if(param_mission == 3)
     {
-        if(!stat("vswap.sd3", &statbuf))
+        if(!stat(DATADIR "vswap.sd3", &statbuf))
             strcpy (extension, "sd3");
         else
             Quit ("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
@@ -4130,7 +4130,7 @@ CheckForEpisodes (void)
     strcpy (graphext, "sod");
     strcpy (audioext, "sod");
 #else
-    if(!stat("vswap.sdm", &statbuf))
+    if(!stat(DATADIR "vswap.sdm", &statbuf))
     {
         strcpy (extension, "sdm");
     }
