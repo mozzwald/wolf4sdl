@@ -4,7 +4,7 @@ CONFIG ?= config.default
 
 BINARY    ?= wolf3d
 PREFIX    ?= /usr/local
-MANPREFIX ?= $(PREFIX)
+DATADIR   ?= $(PREFIX)/share/games/wolf3d/
 
 INSTALL         ?= install
 INSTALL_PROGRAM ?= $(INSTALL) -m 555 -s
@@ -26,6 +26,10 @@ CFLAGS += -Wreturn-type
 CFLAGS += -Wwrite-strings
 CFLAGS += -Wcast-align
 
+
+ifdef DATADIR
+    CFLAGS += -DDATADIR=\"$(DATADIR)\"
+endif
 
 CCFLAGS += $(CFLAGS)
 CCFLAGS += -std=gnu99
