@@ -1,0 +1,98 @@
+.TH WOLF4SDL 6 "December 2010" "1.7-git"
+
+.SH NAME
+wolf4sdl \- An SDL open-source port of id Software's classic first-person shooter
+
+.SH SYNOPSIS
+.B wolf4sdl
+.RI [ options ]
+
+.SH DESCRIPTION
+.B Wolf4SDL
+is an open-source port of id Software's classic first-person shooter
+.B Wolfenstein 3D
+to the cross-plattform multimedia library
+.B "Simple DirectMedia Layer (SDL)" (http://www.libsdl.org). 
+Agains others ports of olders games, this means 
+that all the sprites of graphics are copy exact as the original witouth any texture improve.
+.PP
+So meant to keep the original feel while taking advantage of some 
+improvements at game playing level. Due this the
+.B Wolf4SDL
+can work and run in any machine from 1999 or embebed devices.
+
+The
+.B wolf4sdl
+produced binaries start one of the 
+.B Wolf3d Full v1.4 GT/ID/Activision,
+.B Wolf3d Full v1.4 Apogee (with ReadThis),
+.B Wolf3d Shareware v1.4,
+.B Spear of Destiny Full and Mission Disks
+and
+.B Spear of Destiny Demo
+games, respectively as compilation flags that compiler may provide.
+Run the binary and there's a notification around what its compiled and what game for.
+
+
+.SH OPTIONS
+.TP
+\fB\-\-tedlevel\fR <level>
+Starts the game in the given level
+.TP
+\fB\-\-baby\fR
+Sets the difficulty to baby for tedlevel
+.TP
+\fB\-\-easy\fR
+Sets the difficulty to easy for tedlevel
+.TP
+\fB\-\-normal\fR
+Sets the difficulty to normal for tedlevel
+.TP
+\fB\-\-hard\fR
+Sets the difficulty to hard for tedlevel
+.TP
+\fB\-\-nowait\fR
+Skips intro screens
+.TP
+\fB\-\-windowed\fR
+Starts the game in a window
+.TP
+\fB\-\-res\fR <width> <height>
+Sets the screen resolution
+(must be multiple of 320x200 or 320x240)
+.TP
+\fB\-\-resf\fR <w> <h>
+Sets any screen resolution >= 320x200
+(which may result in graphic errors)
+.TP
+\fB\-\-bits\fR <b>
+Sets the screen color depth
+(use this when you have palette/fading problems
+allowed: 8, 16, 24, 32, default: "best" depth)
+.TP
+\fB\-\-joystick\fR <index>
+Use the index\-th joystick if available
+(\-1 to disable joystick, default: 0)
+.TP
+\fB\-\-joystickhat\fR <index>
+Enables movement with the given coolie hat
+.TP
+\fB\-\-samplerate\fR <rate>
+Sets the sound sample rate (given in Hz, default: 44100)
+.TP
+\fB\-\-audiobuffer\fR <size>
+Sets the size of the audio buffer (\-> sound latency)
+(given in bytes, default: 2048 / (44100 / samplerate))
+.TP
+\fB\-\-ignorenumchunks\fR
+Ignores the number of chunks in VGAHEAD.*
+(may be useful for some broken mods)
+
+.SH AUTHORS
+Wolf4SDL was originally ported and developed by Moritz "Ripper" Kroll 
+.B http://www.chaos-software.de.vu)
+The original Wolfenstein 3D code was develop by id Software 
+.B http://www.idsoftware.com
+.PP
+This manual page was written by PICCORO Lenz McKAY <mckaygerhard@gmail.com>
+for the VenenuX MckAY emu project but may be used by others.
