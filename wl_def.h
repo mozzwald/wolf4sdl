@@ -10,11 +10,13 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <memory.h>
 #if defined(_arch_dreamcast)
 #	include <string.h>
 #	include "dc/dc_main.h"
 #elif !defined(_WIN32)
-#	include <stdint.h>
 #	include <string.h>
 #	include <stdarg.h>
 #endif
@@ -60,7 +62,7 @@ typedef uint8_t byte;
 typedef uint16_t word;
 typedef int32_t fixed;
 typedef uint32_t longword;
-typedef int8_t boolean;
+typedef uint8_t boolean;
 typedef void * memptr;
 
 typedef struct

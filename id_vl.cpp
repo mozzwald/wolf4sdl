@@ -2,6 +2,9 @@
 
 #include <string.h>
 #include "wl_def.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #pragma hdrstop
 
 // Uncomment the following line, if you get destination out of bounds
@@ -38,6 +41,10 @@ unsigned screenHeight = 400;
 unsigned screenBits = -1;      // use "best" color depth according to libSDL
 #endif
 
+SDL_Window *screenWindow = NULL;
+SDL_Renderer *renderer = NULL;
+SDL_Texture  *screenTexture = NULL;
+
 SDL_Surface *screen = NULL;
 unsigned screenPitch;
 
@@ -57,7 +64,7 @@ SDL_Color curpal[256];
 
 
 #define CASSERT(x) extern int ASSERT_COMPILE[((x) != 0) * 2 - 1];
-#define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, 0}
+#define RGB(r, g, b) {(r)*255/63, (g)*255/63, (b)*255/63, SDL_ALPHA_OPAQUE}
 
 SDL_Color gamepal[]={
 #ifdef SPEAR
@@ -96,33 +103,53 @@ void	VL_Shutdown (void)
 
 void	VL_SetVGAPlaneMode (void)
 {
+    screenWindow = SDL_CreateWindow(
 #ifdef SPEAR
-    SDL_WM_SetCaption("Spear of Destiny", NULL);
+        "Spear of Destiny",
 #else
-    SDL_WM_SetCaption("Wolfenstein 3D", NULL);
+        "Wolfenstein 3D",
 #endif
-
-    if(screenBits == -1)
+        SDL_WINDOWPOS_UNDEFINED,
+        SDL_WINDOWPOS_UNDEFINED,
+        screenWidth, screenHeight,
+        fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	if(!screenWindow)
     {
-        const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
-        screenBits = vidInfo->vfmt->BitsPerPixel;
+        printf("Unable to create window: %s\n", SDL_GetError());
+        exit(1);
     }
 
-    screen = SDL_SetVideoMode(screenWidth, screenHeight, screenBits,
-          (usedoublebuffering ? SDL_HWSURFACE | SDL_DOUBLEBUF : 0)
-        | (screenBits == 8 ? SDL_HWPALETTE : 0)
-        | (fullscreen ? SDL_FULLSCREEN : 0));
+    renderer = SDL_CreateRenderer(screenWindow, -1, 0);
+    if(!renderer)
+    {
+        printf("Unable to create renderer: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    int bits;
+    Uint32 a,r,g,b;
+    SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_ARGB8888, &bits, &r, &g, &b, &a);
+    screenBits = bits;
+
+    screen = SDL_CreateRGBSurface(0, screenWidth, screenHeight, bits, r, g, b, a);
     if(!screen)
     {
-        printf("Unable to set %ix%ix%i video mode: %s\n", screenWidth,
+        printf("Unable to create %ix%ix%i surface: %s\n", screenWidth,
             screenHeight, screenBits, SDL_GetError());
         exit(1);
     }
-    if((screen->flags & SDL_DOUBLEBUF) != SDL_DOUBLEBUF)
-        usedoublebuffering = false;
+
+    screenTexture = SDL_CreateTextureFromSurface(renderer, screen);
+    if(!screenTexture)
+    {
+        printf("Unable to create %ix%ix%i texture: %s\n", screenWidth,
+            screenHeight, screenBits, SDL_GetError());
+        exit(1);
+    }
+
     SDL_ShowCursor(SDL_DISABLE);
 
-    SDL_SetColors(screen, gamepal, 0, 256);
+    SDL_SetPaletteColors(screen->format->palette, gamepal, 0, 256);
     memcpy(curpal, gamepal, sizeof(SDL_Color) * 256);
 
     screenBuffer = SDL_CreateRGBSurface(SDL_SWSURFACE, screenWidth,
@@ -132,7 +159,7 @@ void	VL_SetVGAPlaneMode (void)
         printf("Unable to create screen buffer surface: %s\n", SDL_GetError());
         exit(1);
     }
-    SDL_SetColors(screenBuffer, gamepal, 0, 256);
+    SDL_SetPaletteColors(screenBuffer->format->palette, gamepal, 0, 256);
 
     screenPitch = screen->pitch;
     bufferPitch = screenBuffer->pitch;
@@ -174,6 +201,7 @@ void VL_ConvertPalette(byte *srcpal, SDL_Color *destpal, int numColors)
         destpal[i].r = *srcpal++ * 255 / 63;
         destpal[i].g = *srcpal++ * 255 / 63;
         destpal[i].b = *srcpal++ * 255 / 63;
+        destpal[i].a = SDL_ALPHA_OPAQUE;
     }
 }
 
@@ -195,6 +223,7 @@ void VL_FillPalette (int red, int green, int blue)
         pal[i].r = red;
         pal[i].g = green;
         pal[i].b = blue;
+        pal[i].a = SDL_ALPHA_OPAQUE;
     }
 
     VL_SetPalette(pal, true);
@@ -212,17 +241,10 @@ void VL_FillPalette (int red, int green, int blue)
 
 void VL_SetColor	(int color, int red, int green, int blue)
 {
-    SDL_Color col = { red, green, blue };
+    SDL_Color col = { red, green, blue, SDL_ALPHA_OPAQUE };
     curpal[color] = col;
-
-    if(screenBits == 8)
-        SDL_SetPalette(screen, SDL_PHYSPAL, &col, color, 1);
-    else
-    {
-        SDL_SetPalette(curSurface, SDL_LOGPAL, &col, color, 1);
-        SDL_BlitSurface(curSurface, NULL, screen, NULL);
-        SDL_Flip(screen);
-    }
+    SDL_SetPaletteColors(curSurface->format->palette, &col, color, 1);
+    VH_UpdateScreen();
 }
 
 //===========================================================================
@@ -256,18 +278,8 @@ void VL_GetColor	(int color, int *red, int *green, int *blue)
 void VL_SetPalette (SDL_Color *palette, bool forceupdate)
 {
     memcpy(curpal, palette, sizeof(SDL_Color) * 256);
-
-    if(screenBits == 8)
-        SDL_SetPalette(screen, SDL_PHYSPAL, palette, 0, 256);
-    else
-    {
-        SDL_SetPalette(curSurface, SDL_LOGPAL, palette, 0, 256);
-        if(forceupdate)
-        {
-            SDL_BlitSurface(curSurface, NULL, screen, NULL);
-            SDL_Flip(screen);
-        }
-    }
+    SDL_SetPaletteColors(curSurface->format->palette, curpal, 0, 256);
+    VH_UpdateScreen();
 }
 
 
@@ -723,15 +735,9 @@ void VL_LatchToScreenScaledCoord(SDL_Surface *source, int xsrc, int ysrc,
 
 //===========================================================================
 
-/*
-=================
-=
-= VL_ScreenToScreen
-=
-=================
-*/
-
-void VL_ScreenToScreen (SDL_Surface *source, SDL_Surface *dest)
+void VL_RenderFrame (void)
 {
-    SDL_BlitSurface(source, NULL, dest, NULL);
+    SDL_UpdateTexture(screenTexture, NULL, screen->pixels, screen->pitch);
+    SDL_RenderCopy(renderer, screenTexture, NULL, NULL);
+    SDL_RenderPresent(renderer);
 }

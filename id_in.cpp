@@ -37,7 +37,7 @@ boolean forcegrabmouse;
 
 
 // 	Global variables
-volatile boolean    Keyboard[SDLK_LAST];
+volatile boolean    Keyboard[SDL_NUM_SCANCODES];
 volatile boolean	Paused;
 volatile char		LastASCII;
 volatile ScanCode	LastScan;
@@ -93,19 +93,6 @@ byte ShiftNames[] =		// Shifted ASCII for scan codes
 	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 6
 	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0		// 7
 };
-byte SpecialNames[] =	// ASCII for 0xe0 prefixed codes
-{
-//	 0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 0
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,13 ,0  ,0  ,0  ,	// 1
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 2
-	0  ,0  ,0  ,0  ,0  ,'/',0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 3
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 4
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 5
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,	// 6
-	0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0  ,0   	// 7
-};
-
 
 static	boolean		IN_Started;
 
@@ -236,6 +223,27 @@ boolean IN_JoyPresent()
     return Joystick != NULL;
 }
 
+char GetASCII(ScanCode LastScan, SDL_Keymod mod)
+{
+    char sym = 0;
+    if (LastScan >= SDL_SCANCODE_A && LastScan <= SDL_SCANCODE_Z)
+	    sym = 'A' + (LastScan - SDL_SCANCODE_A);
+    if (LastScan >= SDL_SCANCODE_0 && LastScan <= SDL_SCANCODE_9)
+	    sym = '0' + (LastScan - SDL_SCANCODE_A);
+
+    if(mod & (KMOD_SHIFT | KMOD_CAPS))
+    {
+        if(sym < lengthof(ShiftNames) && ShiftNames[sym])
+            sym = ShiftNames[sym];
+    }
+    else
+    {
+        if(sym < lengthof(ASCIINames) && ASCIINames[sym])
+            sym = ASCIINames[sym];
+    }
+	return sym;
+}
+
 static void processEvent(SDL_Event *event)
 {
     switch (event->type)
@@ -247,82 +255,70 @@ static void processEvent(SDL_Event *event)
         // check for keypresses
         case SDL_KEYDOWN:
         {
-            if(event->key.keysym.sym==SDLK_SCROLLOCK || event->key.keysym.sym==SDLK_F12)
+            if(event->key.keysym.scancode==SDL_SCANCODE_SCROLLLOCK || event->key.keysym.scancode==SDL_SCANCODE_F12)
             {
                 GrabInput = !GrabInput;
-                SDL_WM_GrabInput(GrabInput ? SDL_GRAB_ON : SDL_GRAB_OFF);
+                SDL_SetWindowGrab(screenWindow, (SDL_bool)GrabInput);
                 return;
             }
 
-            LastScan = event->key.keysym.sym;
-            SDLMod mod = SDL_GetModState();
+            LastScan = event->key.keysym.scancode;
+            SDL_Keymod mod = SDL_GetModState();
             if(Keyboard[sc_Alt])
             {
-                if(LastScan==SDLK_F4)
+                if(LastScan==SDL_SCANCODE_F4)
                     Quit(NULL);
             }
 
-            if(LastScan == SDLK_KP_ENTER) LastScan = SDLK_RETURN;
-            else if(LastScan == SDLK_RSHIFT) LastScan = SDLK_LSHIFT;
-            else if(LastScan == SDLK_RALT) LastScan = SDLK_LALT;
-            else if(LastScan == SDLK_RCTRL) LastScan = SDLK_LCTRL;
+            if(LastScan == SDL_SCANCODE_KP_ENTER) LastScan = SDL_SCANCODE_RETURN;
+            else if(LastScan == SDL_SCANCODE_RSHIFT) LastScan = SDL_SCANCODE_LSHIFT;
+            else if(LastScan == SDL_SCANCODE_RALT) LastScan = SDL_SCANCODE_LALT;
+            else if(LastScan == SDL_SCANCODE_RCTRL) LastScan = SDL_SCANCODE_LCTRL;
             else
             {
                 if((mod & KMOD_NUM) == 0)
                 {
                     switch(LastScan)
                     {
-                        case SDLK_KP2: LastScan = SDLK_DOWN; break;
-                        case SDLK_KP4: LastScan = SDLK_LEFT; break;
-                        case SDLK_KP6: LastScan = SDLK_RIGHT; break;
-                        case SDLK_KP8: LastScan = SDLK_UP; break;
+                        case SDL_SCANCODE_KP_2: LastScan = SDL_SCANCODE_DOWN; break;
+                        case SDL_SCANCODE_KP_4: LastScan = SDL_SCANCODE_LEFT; break;
+                        case SDL_SCANCODE_KP_6: LastScan = SDL_SCANCODE_RIGHT; break;
+                        case SDL_SCANCODE_KP_8: LastScan = SDL_SCANCODE_UP; break;
                     }
                 }
             }
 
-            int sym = LastScan;
-            if(sym >= 'a' && sym <= 'z')
-                sym -= 32;  // convert to uppercase
+            LastASCII = GetASCII(LastScan, mod);
 
-            if(mod & (KMOD_SHIFT | KMOD_CAPS))
-            {
-                if(sym < lengthof(ShiftNames) && ShiftNames[sym])
-                    LastASCII = ShiftNames[sym];
-            }
-            else
-            {
-                if(sym < lengthof(ASCIINames) && ASCIINames[sym])
-                    LastASCII = ASCIINames[sym];
-            }
-            if(LastScan<SDLK_LAST)
+            if(LastScan<SDL_NUM_SCANCODES)
                 Keyboard[LastScan] = 1;
-            if(LastScan == SDLK_PAUSE)
+            if(LastScan == SDL_SCANCODE_PAUSE)
                 Paused = true;
             break;
-		}
+        }
 
         case SDL_KEYUP:
         {
-            int key = event->key.keysym.sym;
-            if(key == SDLK_KP_ENTER) key = SDLK_RETURN;
-            else if(key == SDLK_RSHIFT) key = SDLK_LSHIFT;
-            else if(key == SDLK_RALT) key = SDLK_LALT;
-            else if(key == SDLK_RCTRL) key = SDLK_LCTRL;
+            int key = event->key.keysym.scancode;
+            if(key == SDL_SCANCODE_KP_ENTER) key = SDL_SCANCODE_RETURN;
+            else if(key == SDL_SCANCODE_RSHIFT) key = SDL_SCANCODE_LSHIFT;
+            else if(key == SDL_SCANCODE_RALT) key = SDL_SCANCODE_LALT;
+            else if(key == SDL_SCANCODE_RCTRL) key = SDL_SCANCODE_LCTRL;
             else
             {
                 if((SDL_GetModState() & KMOD_NUM) == 0)
                 {
                     switch(key)
                     {
-                        case SDLK_KP2: key = SDLK_DOWN; break;
-                        case SDLK_KP4: key = SDLK_LEFT; break;
-                        case SDLK_KP6: key = SDLK_RIGHT; break;
-                        case SDLK_KP8: key = SDLK_UP; break;
+                        case SDL_SCANCODE_KP_2: key = SDL_SCANCODE_DOWN; break;
+                        case SDL_SCANCODE_KP_4: key = SDL_SCANCODE_LEFT; break;
+                        case SDL_SCANCODE_KP_6: key = SDL_SCANCODE_RIGHT; break;
+                        case SDL_SCANCODE_KP_8: key = SDL_SCANCODE_UP; break;
                     }
                 }
             }
 
-            if(key<SDLK_LAST)
+            if(key<SDL_NUM_SCANCODES)
                 Keyboard[key] = 0;
             break;
         }
@@ -392,7 +388,7 @@ IN_Startup(void)
     if(fullscreen || forcegrabmouse)
     {
         GrabInput = true;
-        SDL_WM_GrabInput(SDL_GRAB_ON);
+        SDL_SetWindowGrab(screenWindow, SDL_TRUE);
     }
 
     // I didn't find a way to ask libSDL whether a mouse is present, yet...
@@ -660,5 +656,5 @@ bool IN_IsInputGrabbed()
 
 void IN_CenterMouse()
 {
-    SDL_WarpMouse(screenWidth / 2, screenHeight / 2);
+    SDL_WarpMouseInWindow(screenWindow, screenWidth / 2, screenHeight / 2);
 }
