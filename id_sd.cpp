@@ -492,6 +492,8 @@ SD_StopDigitized(void)
 //            SDL_SBStopSampleInIRQ();
             Mix_HaltChannel(-1);
             break;
+        default:
+            break;
     }
 }
 
@@ -839,6 +841,8 @@ SDL_ShutDevice(void)
             break;
         case sdm_AdLib:
             SDL_ShutAL();
+            break;
+        default:
             break;
     }
     SoundMode = sdm_Off;
@@ -1237,6 +1241,8 @@ SD_SoundPlaying(void)
         case sdm_AdLib:
             result = alSound? true : false;
             break;
+        default:
+            break;
     }
 
     if (result)
@@ -1263,6 +1269,8 @@ SD_StopSound(void)
             break;
         case sdm_AdLib:
             SDL_ALStopSound();
+            break;
+        default:
             break;
     }
 
