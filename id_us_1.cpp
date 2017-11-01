@@ -177,7 +177,7 @@ void
 US_PrintUnsigned(longword n)
 {
 	char	buffer[32];
-	sprintf(buffer, "%lu", n);
+        sprintf(buffer, "%u", n);
 
 	US_Print(buffer);
 }
