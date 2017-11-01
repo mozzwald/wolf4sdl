@@ -492,7 +492,7 @@ US_LineInput(int x,int y,char *buf,const char *def,boolean escok,
 	ScanCode	sc;
 	char		c;
 	char		s[MaxString],olds[MaxString];
-	int         cursor,len;
+        int         cursor,len=0;
 	word		i,
 				w,h,
 				temp;
