@@ -585,7 +585,7 @@ void SD_PrepareSound(int which)
 
 int SD_PlayDigitized(word which,int leftpos,int rightpos)
 {
-    if (!DigiMode)
+    if (DigiMode == sds_Off)
         return 0;
 
     if (which >= NumDigi)
